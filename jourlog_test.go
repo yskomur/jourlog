@@ -8,5 +8,7 @@ func TestLog(t *testing.T) {
 	Notice("%s: info", "Notice")
 	Alert("%s: info", "Alert")
 	Error("%s: info", "Error")
+	Warning("%s: info", "Warning")
+	Debug("%s: info", "Debug")
 	Critical("%s: info", "Critical")
 }

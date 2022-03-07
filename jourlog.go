@@ -30,6 +30,14 @@ func Notice(format string, a ...interface{}) {
 	journalLogger(journal.PriNotice, format, a)
 }
 
+func Warning(format string, a ...interface{}) {
+	journalLogger(journal.PriWarning, format, a)
+}
+
+func Debug(format string, a ...interface{}) {
+	journalLogger(journal.PriDebug, format, a)
+}
+
 func Info(format string, a ...interface{}) {
 	journalLogger(journal.PriInfo, format, a)
 }
