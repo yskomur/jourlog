@@ -1,4 +1,4 @@
-module jourlog
+module github.com/yskomur/jourlog
 
 go 1.15
 
