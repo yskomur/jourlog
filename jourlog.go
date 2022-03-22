@@ -23,33 +23,33 @@ func journalLogger(priority journal.Priority, format string, a ...interface{}) {
 }
 
 func Emerge(format string, a ...interface{}) {
-	journalLogger(journal.PriEmerg, format, a)
+	journalLogger(journal.PriEmerg, format, a...)
 }
 
 func Notice(format string, a ...interface{}) {
-	journalLogger(journal.PriNotice, format, a)
+	journalLogger(journal.PriNotice, format, a...)
 }
 
 func Warning(format string, a ...interface{}) {
-	journalLogger(journal.PriWarning, format, a)
+	journalLogger(journal.PriWarning, format, a...)
 }
 
 func Debug(format string, a ...interface{}) {
-	journalLogger(journal.PriDebug, format, a)
+	journalLogger(journal.PriDebug, format, a...)
 }
 
 func Info(format string, a ...interface{}) {
-	journalLogger(journal.PriInfo, format, a)
+	journalLogger(journal.PriInfo, format, a...)
 }
 
 func Alert(format string, a ...interface{}) {
-	journalLogger(journal.PriAlert, format, a)
+	journalLogger(journal.PriAlert, format, a...)
 }
 
 func Error(format string, a ...interface{}) {
-	journalLogger(journal.PriErr, format, a)
+	journalLogger(journal.PriErr, format, a...)
 }
 
 func Critical(format string, a ...interface{}) {
-	journalLogger(journal.PriCrit, format, a)
+	journalLogger(journal.PriCrit, format, a...)
 }
