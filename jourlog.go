@@ -15,6 +15,11 @@ func SetEcho(state bool) {
 	printLog = state
 }
 
+// GetEcho return current state
+func GetEcho() bool {
+	return printLog
+}
+
 // JournalLogger journal.Send wrapper
 func journalLogger(priority journal.Priority, format string, a ...interface{}) {
 	var record string
@@ -69,4 +74,5 @@ func Critical(format string, a ...interface{}) {
 
 func init() {
 	SetEcho(false)
+	GetEcho()
 }
