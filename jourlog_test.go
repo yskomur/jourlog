@@ -11,4 +11,5 @@ func TestLog(t *testing.T) {
 	Warning("%s: info", "Warning")
 	Debug("%s: info", "Debug")
 	Critical("%s: info", "Critical")
+	t.Log("Bir test yazildi")
 }
