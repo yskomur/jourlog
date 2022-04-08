@@ -7,26 +7,36 @@ import (
 	"strconv"
 )
 
-var printLog bool
-var tracebackDeep = 3
+type JourLog struct {
+	printLog      bool
+	tracebackDeep int
+}
+
+// NewJourlog Create logger new instance
+func NewJourlog() *JourLog {
+	return &JourLog{
+		printLog:      false,
+		tracebackDeep: 3,
+	}
+}
 
 // SetEcho print log record console
-func SetEcho(state bool) {
-	printLog = state
+func (j *JourLog) SetEcho(state bool) {
+	j.printLog = state
 }
 
 // GetEcho return current state
-func GetEcho() bool {
-	return printLog
+func (j *JourLog) GetEcho() bool {
+	return j.printLog
 }
 
 // JournalLogger journal.Send wrapper
-func journalLogger(priority journal.Priority, format string, a ...interface{}) {
+func (j *JourLog) journalLogger(priority journal.Priority, format string, a ...interface{}) {
 	var record string
 	vars := make(map[string]string)
 
 	pc := make([]uintptr, 10) // at least 1 entry needed
-	runtime.Callers(tracebackDeep, pc)
+	runtime.Callers(j.tracebackDeep, pc)
 	f := runtime.FuncForPC(pc[0])
 	file, line := f.FileLine(pc[0])
 
@@ -35,44 +45,39 @@ func journalLogger(priority journal.Priority, format string, a ...interface{}) {
 	vars["CODE_FUNC"] = f.Name()
 	record = fmt.Sprintf(format, a...)
 	_ = journal.Send(record, priority, vars)
-	if printLog {
+	if j.printLog {
 		fmt.Println(record)
 	}
 }
 
-func Emerge(format string, a ...interface{}) {
-	journalLogger(journal.PriEmerg, format, a...)
+func (j *JourLog) Emerge(format string, a ...interface{}) {
+	j.journalLogger(journal.PriEmerg, format, a...)
 }
 
-func Notice(format string, a ...interface{}) {
-	journalLogger(journal.PriNotice, format, a...)
+func (j *JourLog) Notice(format string, a ...interface{}) {
+	j.journalLogger(journal.PriNotice, format, a...)
 }
 
-func Warning(format string, a ...interface{}) {
-	journalLogger(journal.PriWarning, format, a...)
+func (j *JourLog) Warning(format string, a ...interface{}) {
+	j.journalLogger(journal.PriWarning, format, a...)
 }
 
-func Debug(format string, a ...interface{}) {
-	journalLogger(journal.PriDebug, format, a...)
+func (j *JourLog) Debug(format string, a ...interface{}) {
+	j.journalLogger(journal.PriDebug, format, a...)
 }
 
-func Info(format string, a ...interface{}) {
-	journalLogger(journal.PriInfo, format, a...)
+func (j *JourLog) Info(format string, a ...interface{}) {
+	j.journalLogger(journal.PriInfo, format, a...)
 }
 
-func Alert(format string, a ...interface{}) {
-	journalLogger(journal.PriAlert, format, a...)
+func (j *JourLog) Alert(format string, a ...interface{}) {
+	j.journalLogger(journal.PriAlert, format, a...)
 }
 
-func Error(format string, a ...interface{}) {
-	journalLogger(journal.PriErr, format, a...)
+func (j *JourLog) Error(format string, a ...interface{}) {
+	j.journalLogger(journal.PriErr, format, a...)
 }
 
-func Critical(format string, a ...interface{}) {
-	journalLogger(journal.PriCrit, format, a...)
-}
-
-func init() {
-	SetEcho(false)
-	GetEcho()
+func (j *JourLog) Critical(format string, a ...interface{}) {
+	j.journalLogger(journal.PriCrit, format, a...)
 }
