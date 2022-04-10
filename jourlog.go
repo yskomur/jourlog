@@ -8,13 +8,15 @@ import (
 )
 
 type JourLog struct {
+	logLevel      journal.Priority
 	printLog      bool
 	tracebackDeep int
 }
 
-// NewJourlog Create logger new instance
+// NewJourlog Create logger instance
 func NewJourlog() *JourLog {
 	return &JourLog{
+		logLevel:      journal.PriInfo,
 		printLog:      false,
 		tracebackDeep: 3,
 	}
@@ -51,33 +53,49 @@ func (j *JourLog) journalLogger(priority journal.Priority, format string, a ...i
 }
 
 func (j *JourLog) Emerge(format string, a ...interface{}) {
-	j.journalLogger(journal.PriEmerg, format, a...)
-}
-
-func (j *JourLog) Notice(format string, a ...interface{}) {
-	j.journalLogger(journal.PriNotice, format, a...)
-}
-
-func (j *JourLog) Warning(format string, a ...interface{}) {
-	j.journalLogger(journal.PriWarning, format, a...)
-}
-
-func (j *JourLog) Debug(format string, a ...interface{}) {
-	j.journalLogger(journal.PriDebug, format, a...)
-}
-
-func (j *JourLog) Info(format string, a ...interface{}) {
-	j.journalLogger(journal.PriInfo, format, a...)
+	if j.logLevel >= journal.PriEmerg {
+		j.journalLogger(journal.PriEmerg, format, a...)
+	}
 }
 
 func (j *JourLog) Alert(format string, a ...interface{}) {
-	j.journalLogger(journal.PriAlert, format, a...)
-}
-
-func (j *JourLog) Error(format string, a ...interface{}) {
-	j.journalLogger(journal.PriErr, format, a...)
+	if j.logLevel >= journal.PriAlert {
+		j.journalLogger(journal.PriAlert, format, a...)
+	}
 }
 
 func (j *JourLog) Critical(format string, a ...interface{}) {
-	j.journalLogger(journal.PriCrit, format, a...)
+	if j.logLevel >= journal.PriCrit {
+		j.journalLogger(journal.PriCrit, format, a...)
+	}
+}
+
+func (j *JourLog) Error(format string, a ...interface{}) {
+	if j.logLevel >= journal.PriErr {
+		j.journalLogger(journal.PriErr, format, a...)
+	}
+}
+
+func (j *JourLog) Warning(format string, a ...interface{}) {
+	if j.logLevel >= journal.PriWarning {
+		j.journalLogger(journal.PriWarning, format, a...)
+	}
+}
+
+func (j *JourLog) Notice(format string, a ...interface{}) {
+	if j.logLevel >= journal.PriNotice {
+		j.journalLogger(journal.PriNotice, format, a...)
+	}
+}
+
+func (j *JourLog) Info(format string, a ...interface{}) {
+	if j.logLevel >= journal.PriInfo {
+		j.journalLogger(journal.PriInfo, format, a...)
+	}
+}
+
+func (j *JourLog) Debug(format string, a ...interface{}) {
+	if j.logLevel >= journal.PriDebug {
+		j.journalLogger(journal.PriDebug, format, a...)
+	}
 }
