@@ -27,6 +27,16 @@ func (j *JourLog) SetEcho(state bool) {
 	j.printLog = state
 }
 
+// SetLogLevel set new loglevel
+func (j *JourLog) SetLogLevel(l journal.Priority) {
+	j.logLevel = l
+}
+
+// GetLogLevel return current loglevel
+func (j *JourLog) GetLogLevel() journal.Priority {
+	return j.logLevel
+}
+
 // GetEcho return current state
 func (j *JourLog) GetEcho() bool {
 	return j.printLog
