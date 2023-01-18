@@ -13,6 +13,15 @@ type JourLog struct {
 	tracebackDeep int
 }
 
+// NewJourlog Create logger instance
+func NewJourlog() *JourLog {
+	return &JourLog{
+		logLevel:      journal.PriInfo,
+		printLog:      false,
+		tracebackDeep: 3,
+	}
+}
+
 var JLog = &JourLog{
 	logLevel:      journal.PriInfo,
 	printLog:      false,
