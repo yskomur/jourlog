@@ -1,5 +1,5 @@
 module github.com/yskomur/jourlog
 
-go 1.15
+go 1.24
 
-require github.com/coreos/go-systemd/v22 v22.5.0
+require github.com/coreos/go-systemd/v22 v22.6.0
