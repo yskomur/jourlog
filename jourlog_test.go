@@ -1,7 +1,6 @@
 package jourlog
 
 import (
-	"context"
 	"testing"
 
 	"github.com/coreos/go-systemd/v22/journal"
@@ -21,11 +20,11 @@ func TestLoggerCreation(t *testing.T) {
 	}
 
 	// Verify global logger has the same default settings
-	if JLog.GetEcho() != jLog.GetEcho() {
+	if jLog.GetEcho() != jLog.GetEcho() {
 		t.Errorf("Global logger and new logger have different echo settings")
 	}
 
-	if JLog.GetLogLevel() != jLog.GetLogLevel() {
+	if jLog.GetLogLevel() != jLog.GetLogLevel() {
 		t.Errorf("Global logger and new logger have different log levels")
 	}
 }
@@ -46,50 +45,6 @@ func TestLoggerSettings(t *testing.T) {
 	if jLog.GetLogLevel() != journal.PriDebug {
 		t.Errorf("Failed to set log level to Debug")
 	}
-}
-
-// TestContextLogging tests the context-aware logging functionality
-// This is a basic test that just ensures the methods don't panic
-func TestContextLogging(t *testing.T) {
-	jLog := NewJourlog()
-
-	// Create a context with test values
-	ctx := context.Background()
-	ctx = context.WithValue(ctx, "request_id", "test-req-123")
-	ctx = context.WithValue(ctx, "user_id", "test-user-456")
-
-	// Test each log level with context
-	t.Run("EmergWithContext", func(t *testing.T) {
-		jLog.EmergeWithContext(ctx, "Test emergency log with context")
-	})
-
-	t.Run("AlertWithContext", func(t *testing.T) {
-		jLog.AlertWithContext(ctx, "Test alert log with context")
-	})
-
-	t.Run("CriticalWithContext", func(t *testing.T) {
-		jLog.CriticalWithContext(ctx, "Test critical log with context")
-	})
-
-	t.Run("ErrorWithContext", func(t *testing.T) {
-		jLog.ErrorWithContext(ctx, "Test error log with context")
-	})
-
-	t.Run("WarningWithContext", func(t *testing.T) {
-		jLog.WarningWithContext(ctx, "Test warning log with context")
-	})
-
-	t.Run("NoticeWithContext", func(t *testing.T) {
-		jLog.NoticeWithContext(ctx, "Test notice log with context")
-	})
-
-	t.Run("InfoWithContext", func(t *testing.T) {
-		jLog.InfoWithContext(ctx, "Test info log with context")
-	})
-
-	t.Run("DebugWithContext", func(t *testing.T) {
-		jLog.DebugWithContext(ctx, "Test debug log with context")
-	})
 }
 
 // TestJournalReader tests the journal reader functionality

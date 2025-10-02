@@ -46,31 +46,6 @@ func main() {
 }
 ```
 
-### Context-Aware Logging
-
-```go
-package main
-
-import (
-    "context"
-    "github.com/yskomur/jourlog"
-)
-
-func handleRequest(ctx context.Context) {
-    // Create a context with request ID
-    ctx = context.WithValue(ctx, "request_id", "req-123456")
-    ctx = context.WithValue(ctx, "user_id", "user-789")
-
-    // Log with context
-    jourlog.JLog.InfoWithContext(ctx, "Processing request")
-
-    // Log an error with context
-    if err := processData(); err != nil {
-        jourlog.JLog.ErrorWithContext(ctx, "Failed to process data: %v", err)
-    }
-}
-```
-
 ### Reading from Journal
 
 ```go
