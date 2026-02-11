@@ -1,6 +1,3 @@
-// Package jourlog provides a Go interface for logging to systemd's journal.
-// It supports all standard log levels and can be configured to echo logs to the console.
-// The package also captures file, line, and function information for each log entry.
 package jourlog
 
 import (
