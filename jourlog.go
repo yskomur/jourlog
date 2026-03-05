@@ -4,26 +4,29 @@ import (
 	"fmt"
 	"runtime"
 	"strconv"
+	"strings"
 
 	"github.com/coreos/go-systemd/v22/journal"
+)
+
+const (
+	runtimePrefix = "runtime."
+	jourlogPrefix = "github.com/yskomur/jourlog."
 )
 
 // JourLog represents a logger instance that writes to systemd's journal.
 // It can be configured with different log levels and options.
 type JourLog struct {
-	logLevel      journal.Priority // Current log level threshold
-	printLog      bool             // Whether to echo logs to console
-	tracebackDeep int              // How many stack frames to skip when capturing caller info
+	logLevel journal.Priority // Current log level threshold
+	printLog bool             // Whether to echo logs to the console
 }
 
 // NewJourlog creates a new logger instance with default settings.
-// By default, the log level is set to Info, console output is disabled,
-// and the traceback depth is set to 3.
+// By default, the log level is set to Info and console output is disabled.
 func NewJourlog() *JourLog {
 	return &JourLog{
-		logLevel:      journal.PriInfo,
-		printLog:      false,
-		tracebackDeep: 2,
+		logLevel: journal.PriInfo,
+		printLog: false,
 	}
 }
 
@@ -53,13 +56,25 @@ func (j *JourLog) SetEcho(state bool) {
 
 // getCaller captures caller information from the stack
 func (j *JourLog) getCaller() (string, string, string) {
-	pc := make([]uintptr, 10)
-	n := runtime.Callers(j.tracebackDeep+1, pc) // +1 because we're in a helper function
-	if n > 0 {
-		f := runtime.FuncForPC(pc[0])
-		if f != nil {
-			file, line := f.FileLine(pc[0])
-			return file, strconv.Itoa(line), f.Name()
+	pc := make([]uintptr, 32)
+	// Skip runtime.Callers + getCaller.
+	n := runtime.Callers(2, pc)
+	if n <= 0 {
+		return "unknown", "0", "unknown"
+	}
+
+	frames := runtime.CallersFrames(pc[:n])
+	for {
+		frame, more := frames.Next()
+		fn := frame.Function
+
+		// Skip frames from runtime and this logging package itself.
+		if !strings.HasPrefix(fn, runtimePrefix) &&
+			!strings.HasPrefix(fn, jourlogPrefix) {
+			return frame.File, strconv.Itoa(frame.Line), fn
+		}
+		if !more {
+			break
 		}
 	}
 	return "unknown", "0", "unknown"
@@ -77,10 +92,10 @@ func (j *JourLog) journalLogger(priority journal.Priority, format string, a ...i
 	// Format the message
 	record := fmt.Sprintf(format, a...)
 
-	// Send to journal
+	// Send it to the journal
 	err := journal.Send(record, priority, vars)
 	if err != nil {
-		// If journal logging fails, at least print to console
+		// If journal logging fails, at least print to the console
 		fmt.Printf("Failed to log to journal: %v\n", err)
 	}
 

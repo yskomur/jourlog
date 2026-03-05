@@ -158,48 +158,53 @@ func (j *JournalReader) Today() error {
 	return j.SetSince(midnight)
 }
 
-// Retrieve fetches the next log entry from the journal.
-// Returns the message content and any error encountered.
-func (j *JournalReader) Retrieve() (string, error) {
+// RetrieveEntry fetches the next full log entry from the journal.
+// Returns all entry fields and any error encountered.
+func (j *JournalReader) RetrieveEntry() (map[string]string, error) {
 	// Check if we've reached the limit
 	if j.limit > 0 && j.retrieved >= j.limit {
-		return "", fmt.Errorf("reached limit of %d entries", j.limit)
+		return nil, fmt.Errorf("reached limit of %d entries", j.limit)
 	}
 
 	// Move to the next entry
 	n, err := j.j.Next()
 	if err != nil {
-		return "", fmt.Errorf("failed to advance to next entry: %w", err)
+		return nil, fmt.Errorf("failed to advance to next entry: %w", err)
 	}
 
 	// Check if we reached the end
 	if n == 0 {
-		return "", fmt.Errorf("no more entries")
+		return nil, fmt.Errorf("no more entries")
 	}
 
 	// Get the entry
 	log, err := j.j.GetEntry()
 	if err != nil {
-		return "", fmt.Errorf("failed to get entry: %w", err)
-	}
-
-	// Print all fields for debugging
-	for f, rec := range log.Fields {
-		fmt.Printf("%s: %s\n", f, rec)
+		return nil, fmt.Errorf("failed to get entry: %w", err)
 	}
 
 	// Update cursor position
 	cursor, err := j.j.GetCursor()
 	if err != nil {
-		return "", fmt.Errorf("failed to get cursor: %w", err)
+		return nil, fmt.Errorf("failed to get cursor: %w", err)
 	}
 	j.cursor = cursor
 
 	// Increment the retrieved counter
 	j.retrieved++
 
-	// Return the message content
-	message, ok := log.Fields["MESSAGE"]
+	return log.Fields, nil
+}
+
+// Retrieve fetches the next log entry from the journal.
+// Returns the message content and any error encountered.
+func (j *JournalReader) Retrieve() (string, error) {
+	fields, err := j.RetrieveEntry()
+	if err != nil {
+		return "", err
+	}
+
+	message, ok := fields["MESSAGE"]
 	if !ok {
 		return "", fmt.Errorf("entry has no MESSAGE field")
 	}

@@ -1,7 +1,12 @@
 package jourlog
 
 import (
+	"path/filepath"
+	"runtime"
+	"strconv"
+	"strings"
 	"testing"
+	"time"
 
 	"github.com/coreos/go-systemd/v22/journal"
 )
@@ -71,4 +76,71 @@ func TestJournalReader(t *testing.T) {
 	} else {
 		t.Logf("Successfully retrieved journal entry: %s", message)
 	}
+}
+
+//go:noinline
+func emitCallerMetadataTestLog(jLog *JourLog, message string) (string, string, int) {
+	_, file, line, _ := runtime.Caller(0)
+	jLog.Info("%s", message)
+	return file, "github.com/yskomur/jourlog.emitCallerMetadataTestLog", line + 1
+}
+
+func TestCallerMetadataWithJournalReader(t *testing.T) {
+	reader, err := NewJournalReader()
+	if err != nil {
+		t.Skip("Skipping caller metadata test: ", err)
+	}
+	defer func() {
+		_ = reader.Close()
+	}()
+
+	if err := reader.SeekTail(); err != nil {
+		t.Skip("Skipping caller metadata test (seek tail failed): ", err)
+	}
+
+	marker := "jourlog-caller-test-" + strconv.FormatInt(time.Now().UnixNano(), 10)
+	if err := reader.SetMessageFilter(marker); err != nil {
+		t.Skip("Skipping caller metadata test (message filter failed): ", err)
+	}
+
+	jLog := NewJourlog()
+	expectedFile, expectedFunc, expectedLine := emitCallerMetadataTestLog(jLog, marker)
+
+	deadline := time.Now().Add(3 * time.Second)
+	for time.Now().Before(deadline) {
+		fields, err := reader.RetrieveEntry()
+		if err != nil {
+			if strings.Contains(err.Error(), "no more entries") {
+				time.Sleep(25 * time.Millisecond)
+				continue
+			}
+			t.Skip("Skipping caller metadata test (retrieve failed): ", err)
+		}
+
+		gotMsg := fields["MESSAGE"]
+		if gotMsg != marker {
+			continue
+		}
+
+		gotFile := fields["CODE_FILE"]
+		gotFunc := fields["CODE_FUNC"]
+		gotLine := fields["CODE_LINE"]
+
+		if gotFile == "" || gotFunc == "" || gotLine == "" {
+			t.Fatalf("missing caller metadata fields: CODE_FILE=%q CODE_FUNC=%q CODE_LINE=%q", gotFile, gotFunc, gotLine)
+		}
+
+		if filepath.Clean(gotFile) != filepath.Clean(expectedFile) {
+			t.Fatalf("CODE_FILE mismatch: got=%q expected=%q", gotFile, expectedFile)
+		}
+		if gotFunc != expectedFunc {
+			t.Fatalf("CODE_FUNC mismatch: got=%q expected=%q", gotFunc, expectedFunc)
+		}
+		if gotLine != strconv.Itoa(expectedLine) {
+			t.Fatalf("CODE_LINE mismatch: got=%q expected=%d", gotLine, expectedLine)
+		}
+		return
+	}
+
+	t.Skip("Skipping caller metadata test (journal entry not observed in time)")
 }
